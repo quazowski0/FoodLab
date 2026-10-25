@@ -19,25 +19,17 @@ Głównym zadaniem tego modułu jest proponowanie użytkownikowi konkretnych pos
 Za realizację Issue 4, czyli filtry, poziom trudności i podsumowanie makroskładników, odpowiada @Jeroklif.
 Ten moduł umożliwia użytkownikom precyzyjne filtrowanie proponowanych przepisów ze względu na poziom trudności wykonania oraz maksymalną kaloryczność posiłku. Ponieważ zewnętrzne API rzadko podają stopień skomplikowania, konieczne będzie zaplanowanie logiki, która oszacuje go samodzielnie, na przykład na podstawie czasu przygotowania. Dodatkowo powstanie specjalny widok makroskładników przepisu, który podsumuje wartości odżywcze wybranych dań. Największą trudnością będzie tutaj płynne przeliczanie tych wartości w czasie rzeczywistym oraz sprawne powiązanie filtrów z wynikami wyszukiwania przepisów. Prace uznacie za zakończone, gdy suwaki będą poprawnie zawężać widoczne wyniki, a użytkownik otrzyma czytelny podgląd wszystkich makroskładników posiłku.
 
-Technologia
-Framework i język: React, JavaScript
+- **Framework i język:** React, JavaScript
+- **Narzędzie do budowania:** Vite
+- **Routing:** React Router
+- **Stan aplikacji:** React Context + useReducer
+- **Zapis danych:** localStorage (bez własnego backendu)
+- **API:**
+  - [Open Food Facts](https://world.openfoodfacts.org/data) – produkty i wartości odżywcze, bez klucza
+  - [Spoonacular](https://spoonacular.com/food-api) – przepisy, wyszukiwanie po składnikach, kalorie, makro i czas przygotowania (darmowy plan)
+- **Biblioteki:** html5-qrcode (skanowanie kodów kreskowych)
+- **Jakość kodu:** ESLint, Prettier
 
-Narzędzie do budowania: Vite
-
-Routing: React Router
-
-Stan aplikacji: React Context + useReducer
-
-Zapis danych: localStorage (bez własnego backendu)
-
-API:
-Open Food Facts – produkty i wartości odżywcze, bez klucza
-
-Spoonacular – przepisy, wyszukiwanie po składnikach, kalorie, makro i czas przygotowania (darmowy plan)
-
-Biblioteki: html5-qrcode (skanowanie kodów kreskowych)
-
-Jakość kodu: ESLint, Prettier
 
 Funkcjonalności
 | Funkcja | Właściciel | Opis |
