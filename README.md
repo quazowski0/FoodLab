@@ -19,3 +19,6 @@ Głównym zadaniem tego modułu jest proponowanie użytkownikowi konkretnych pos
 Za realizację Issue 4, czyli filtry, poziom trudności i podsumowanie makroskładników, odpowiada @Jeroklif.
 Ten moduł umożliwia użytkownikom precyzyjne filtrowanie proponowanych przepisów ze względu na poziom trudności wykonania oraz maksymalną kaloryczność posiłku. Ponieważ zewnętrzne API rzadko podają stopień skomplikowania, konieczne będzie zaplanowanie logiki, która oszacuje go samodzielnie, na przykład na podstawie czasu przygotowania. Dodatkowo powstanie specjalny widok makroskładników przepisu, który podsumuje wartości odżywcze wybranych dań. Największą trudnością będzie tutaj płynne przeliczanie tych wartości w czasie rzeczywistym oraz sprawne powiązanie filtrów z wynikami wyszukiwania przepisów. Prace uznacie za zakończone, gdy suwaki będą poprawnie zawężać widoczne wyniki, a użytkownik otrzyma czytelny podgląd wszystkich makroskładników posiłku.
 
+
+
+Funkcjonalności: https://github.com/quazowski0/FoodLab/issues
