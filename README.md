@@ -21,14 +21,22 @@ Ten moduł umożliwia użytkownikom precyzyjne filtrowanie proponowanych przepis
 
 Technologia
 Framework i język: React, JavaScript
+
 Narzędzie do budowania: Vite
+
 Routing: React Router
+
 Stan aplikacji: React Context + useReducer
+
 Zapis danych: localStorage (bez własnego backendu)
+
 API:
 Open Food Facts – produkty i wartości odżywcze, bez klucza
+
 Spoonacular – przepisy, wyszukiwanie po składnikach, kalorie, makro i czas przygotowania (darmowy plan)
+
 Biblioteki: html5-qrcode (skanowanie kodów kreskowych)
+
 Jakość kodu: ESLint, Prettier
 
 Funkcjonalności
@@ -38,9 +46,3 @@ Funkcjonalności
 | Baza produktów | @m1szczygiel | [#3](../../issues/3) – wyszukiwanie produktów w Open Food Facts i ręczne dodawanie z wartościami odżywczymi |
 | Przepisy i lista zakupów | @quazowski0 | [#4](../../issues/4) – propozycje dań sortowane według liczby brakujących składników, generowanie listy zakupów |
 | Filtry i makroskładniki | @Jeroklif | [#5](../../issues/5) – filtry trudności i kaloryczności, widok makroskładników przepisu |
-
-Funkcjonalności:
-https://github.com/quazowski0/FoodLab/issues/2 @Olek2q
-https://github.com/quazowski0/FoodLab/issues/3 @m1szczygiel
-https://github.com/quazowski0/FoodLab/issues/4 @quazowski0
-https://github.com/quazowski0/FoodLab/issues/5 @Jeroklif
