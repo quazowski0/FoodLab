@@ -21,4 +21,8 @@ Ten moduł umożliwia użytkownikom precyzyjne filtrowanie proponowanych przepis
 
 
 
-Funkcjonalności: https://github.com/quazowski0/FoodLab/issues
+Funkcjonalności:
+https://github.com/quazowski0/FoodLab/issues/2 @Olek2q
+https://github.com/quazowski0/FoodLab/issues/3 @m1szczygiel
+https://github.com/quazowski0/FoodLab/issues/4 @quazowski0
+https://github.com/quazowski0/FoodLab/issues/5 @Jeroklif
