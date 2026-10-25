@@ -1,11 +1,14 @@
 # FoodLab
 Aplikacja pozwala na zarządzanie produktami, które mamy w domu, i na ich podstawie podpowiada, co można z nich ugotować - użytkownik sam dobiera poziom trudności oraz wartość energetyczną posiłków. FoodLab jest dla osób, które nie wiedzą, co ugotować z tego, co aktualnie mają w kuchni, a jednocześnie chcą  mieć podgląd na makroskładniki zjadanych dań. Korzystając masz wpływ na rozbudowę bazy produktów poprzez dodawanie ich do aplikacji. 
 
-Zespół: 
-Krzysztof Oleksy @quazowski0
-Oleksandr Tkach @Olek2q
-Michał Szczygieł @m1szczygiel
-Maksymilian Zakrzewski @Jeroklif
+## Zespół
+
+| Osoba | Login | Część projektu |
+|---|---|---|
+| Oleksandr Tkach | @Olek2q | Wirtualna spiżarnia |
+| Michał Szczygieł | @m1szczygiel | Baza produktów i integracja z Open Food Facts |
+| Krzysztof Oleksy | @quazowski0 | Wyszukiwanie przepisów i lista zakupów |
+| Maksymilian Zakrzewski | @Jeroklif | Filtry trudności i kalorii, podsumowanie makroskładników |
 
 Za realizację Issue 1, czyli stworzenie modułu wirtualnej spiżarni, odpowiada @Olek2q.
 Moduł ten pozwala użytkownikowi na swobodne dodawanie, edytowanie oraz usuwanie produktów spożywczych, które aktualnie posiada w swojej kuchni. Głównym elementem interfejsu będzie czytelna lista prezentująca zgromadzone zapasy wraz z ich ilością oraz datą ważności. Wszystkie wprowadzane informacje muszą być zapisywane lokalnie w przeglądarce przy użyciu mechanizmu localStorage, co zapobiegnie ich utracie po odświeżeniu strony. Największym wyzwaniem w tym zadaniu jest poprawne zaprojektowanie globalnego stanu aplikacji, aby pozostałe moduły mogły bezproblemowo odczytywać dane o dostępnych składnikach. Prace zostaną uznane za zakończone, gdy panel będzie w pełni interaktywny, a aplikacja stabilnie zapamięta każdą wprowadzoną przez użytkownika zmianę.
@@ -19,6 +22,7 @@ Głównym zadaniem tego modułu jest proponowanie użytkownikowi konkretnych pos
 Za realizację Issue 4, czyli filtry, poziom trudności i podsumowanie makroskładników, odpowiada @Jeroklif.
 Ten moduł umożliwia użytkownikom precyzyjne filtrowanie proponowanych przepisów ze względu na poziom trudności wykonania oraz maksymalną kaloryczność posiłku. Ponieważ zewnętrzne API rzadko podają stopień skomplikowania, konieczne będzie zaplanowanie logiki, która oszacuje go samodzielnie, na przykład na podstawie czasu przygotowania. Dodatkowo powstanie specjalny widok makroskładników przepisu, który podsumuje wartości odżywcze wybranych dań. Największą trudnością będzie tutaj płynne przeliczanie tych wartości w czasie rzeczywistym oraz sprawne powiązanie filtrów z wynikami wyszukiwania przepisów. Prace uznacie za zakończone, gdy suwaki będą poprawnie zawężać widoczne wyniki, a użytkownik otrzyma czytelny podgląd wszystkich makroskładników posiłku.
 
+## Technologia
 - **Framework i język:** React, JavaScript
 - **Narzędzie do budowania:** Vite
 - **Routing:** React Router
