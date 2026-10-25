@@ -19,7 +19,25 @@ Głównym zadaniem tego modułu jest proponowanie użytkownikowi konkretnych pos
 Za realizację Issue 4, czyli filtry, poziom trudności i podsumowanie makroskładników, odpowiada @Jeroklif.
 Ten moduł umożliwia użytkownikom precyzyjne filtrowanie proponowanych przepisów ze względu na poziom trudności wykonania oraz maksymalną kaloryczność posiłku. Ponieważ zewnętrzne API rzadko podają stopień skomplikowania, konieczne będzie zaplanowanie logiki, która oszacuje go samodzielnie, na przykład na podstawie czasu przygotowania. Dodatkowo powstanie specjalny widok makroskładników przepisu, który podsumuje wartości odżywcze wybranych dań. Największą trudnością będzie tutaj płynne przeliczanie tych wartości w czasie rzeczywistym oraz sprawne powiązanie filtrów z wynikami wyszukiwania przepisów. Prace uznacie za zakończone, gdy suwaki będą poprawnie zawężać widoczne wyniki, a użytkownik otrzyma czytelny podgląd wszystkich makroskładników posiłku.
 
+Technologia
+Framework i język: React, JavaScript
+Narzędzie do budowania: Vite
+Routing: React Router
+Stan aplikacji: React Context + useReducer
+Zapis danych: localStorage (bez własnego backendu)
+API:
+Open Food Facts – produkty i wartości odżywcze, bez klucza
+Spoonacular – przepisy, wyszukiwanie po składnikach, kalorie, makro i czas przygotowania (darmowy plan)
+Biblioteki: html5-qrcode (skanowanie kodów kreskowych)
+Jakość kodu: ESLint, Prettier
 
+Funkcjonalności
+| Funkcja | Właściciel | Opis |
+|---|---|---|
+| Wirtualna spiżarnia | @Olek2q | [#2](../../issues/2) – dodawanie, edycja i usuwanie produktów z ilością i datą ważności, zapis w localStorage |
+| Baza produktów | @m1szczygiel | [#3](../../issues/3) – wyszukiwanie produktów w Open Food Facts i ręczne dodawanie z wartościami odżywczymi |
+| Przepisy i lista zakupów | @quazowski0 | [#4](../../issues/4) – propozycje dań sortowane według liczby brakujących składników, generowanie listy zakupów |
+| Filtry i makroskładniki | @Jeroklif | [#5](../../issues/5) – filtry trudności i kaloryczności, widok makroskładników przepisu |
 
 Funkcjonalności:
 https://github.com/quazowski0/FoodLab/issues/2 @Olek2q
