@@ -11,6 +11,8 @@ Aplikacja pozwala na zarządzanie produktami, które mamy w domu, i na ich podst
 | Maksymilian Zakrzewski | @Jeroklif | Filtry trudności i kalorii, podsumowanie makroskładników |
 
 
+## Opis
+
 Za realizację Issue 1, czyli stworzenie modułu wirtualnej spiżarni, odpowiada @Olek2q.
 Moduł ten pozwala użytkownikowi na swobodne dodawanie, edytowanie oraz usuwanie produktów spożywczych, które aktualnie posiada w swojej kuchni. Głównym elementem interfejsu będzie czytelna lista prezentująca zgromadzone zapasy wraz z ich ilością oraz datą ważności. Wszystkie wprowadzane informacje muszą być zapisywane lokalnie w przeglądarce przy użyciu mechanizmu localStorage, co zapobiegnie ich utracie po odświeżeniu strony. Największym wyzwaniem w tym zadaniu jest poprawne zaprojektowanie globalnego stanu aplikacji, aby pozostałe moduły mogły bezproblemowo odczytywać dane o dostępnych składnikach. Prace zostaną uznane za zakończone, gdy panel będzie w pełni interaktywny, a aplikacja stabilnie zapamięta każdą wprowadzoną przez użytkownika zmianę.
 
