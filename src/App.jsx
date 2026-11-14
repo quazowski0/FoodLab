@@ -1,17 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import Summary from './pages/Summary.jsx';
+import Pantry from './pages/Pantry.jsx';
+import { PantryProvider } from './features/spizarnia';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import InteractiveBackground from './components/InteractiveBackground.jsx';
 import Footer from './components/Footer.jsx';
 
 // Widoki modułów (na razie zaślepki, każdy właściciel podmienia swój komponent)
-const Pantry = () => (
-  <section className="page">
-    <h2>Spiżarnia (Olek)</h2>
-    <p>Tu będzie dodawanie produktów i localStorage.</p>
-  </section>
-);
 const ProductDatabase = () => (
   <section className="page">
     <h2>Baza Produktów (Michał)</h2>
@@ -86,7 +82,10 @@ function AppShell() {
 function App() {
   return (
     <Router>
-      <AppShell />
+      {/* wspólny stan spiżarni dla wszystkich modułów: usePantry() */}
+      <PantryProvider>
+        <AppShell />
+      </PantryProvider>
     </Router>
   );
 }
