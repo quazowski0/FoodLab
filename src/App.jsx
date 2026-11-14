@@ -1,32 +1,92 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation } from 'react-router-dom';
+import Home from './pages/Home.jsx';
+import Summary from './pages/Summary.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
+import InteractiveBackground from './components/InteractiveBackground.jsx';
+import Footer from './components/Footer.jsx';
 
-const Pantry = () => <div><h2>Spiżarnia (Olek)</h2><p>Tu będzie dodawanie produktów i localStorage.</p></div>;
-const ProductDatabase = () => <div><h2>Baza Produktów (Michał)</h2><p>Tu wjedzie wyszukiwarka z Open Food Facts.</p></div>;
-const Recipes = () => <div><h2>Przepisy i Lista (Krzysiek)</h2><p>Tu będą kafelki z Spoonacular i lista zakupów.</p></div>;
-const Summary = () => <div><h2>Podsumowanie (Maks)</h2><p>Tu będą suwaki kalorii i makro.</p></div>;
+// Widoki modułów (na razie zaślepki, każdy właściciel podmienia swój komponent)
+const Pantry = () => (
+  <section className="page">
+    <h2>Spiżarnia (Olek)</h2>
+    <p>Tu będzie dodawanie produktów i localStorage.</p>
+  </section>
+);
+const ProductDatabase = () => (
+  <section className="page">
+    <h2>Baza Produktów (Michał)</h2>
+    <p>Tu wjedzie wyszukiwarka z Open Food Facts.</p>
+  </section>
+);
+const Recipes = () => (
+  <section className="page">
+    <h2>Przepisy i Lista (Krzysiek)</h2>
+    <p>Tu będą kafelki z Spoonacular i lista zakupów.</p>
+  </section>
+);
+
+const NotFound = () => (
+  <section className="page page--center">
+    <h2>Nie ma takiej strony</h2>
+    <p>Sprawdź adres albo wróć na stronę główną.</p>
+    <Link to="/" className="btn btn--primary">Strona główna</Link>
+  </section>
+);
+
+const navItems = [
+  { to: '/spizarnia', label: 'Spiżarnia' },
+  { to: '/baza', label: 'Baza produktów' },
+  { to: '/przepisy', label: 'Przepisy' },
+  { to: '/podsumowanie', label: 'Filtry i makro' },
+];
+
+function AppShell() {
+  const location = useLocation();
+
+  return (
+    <div className="app">
+      <InteractiveBackground />
+      <header className="topbar">
+        <div className="container topbar__inner">
+          <Link to="/" className="brand" aria-label="FoodLab, strona główna">
+            <img src="/favicon.svg" alt="" width="28" height="28" />
+            <span>FoodLab</span>
+          </Link>
+
+          {/* Główna nawigacja projektu */}
+          <nav className="nav" aria-label="Główna nawigacja">
+            {navItems.map((item) => (
+              <NavLink key={item.to} to={item.to} className="nav__link">
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+          <ThemeToggle />
+        </div>
+      </header>
+
+      {/* Dynamiczne renderowanie widoków */}
+      {/* key = adres, żeby każda podstrona wjeżdżała z animacją */}
+      <main className="container main route-fade" key={location.pathname}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/spizarnia" element={<Pantry />} />
+          <Route path="/baza" element={<ProductDatabase />} />
+          <Route path="/przepisy" element={<Recipes />} />
+          <Route path="/podsumowanie" element={<Summary />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+
+      <Footer />
+      </div>
+  );
+}
 
 function App() {
   return (
     <Router>
-      <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-        <h1>FoodLab</h1>
-        
-        {/* Główna nawigacja projektu */}
-        <nav style={{ borderBottom: '1px solid #ccc', paddingBottom: '15px', marginBottom: '20px' }}>
-          <Link to="/" style={{ marginRight: '20px' }}>Spiżarnia</Link>
-          <Link to="/baza" style={{ marginRight: '20px' }}>Baza Produktów</Link>
-          <Link to="/przepisy" style={{ marginRight: '20px' }}>Przepisy</Link>
-          <Link to="/podsumowanie">Filtry i Makro</Link>
-        </nav>
-
-        {/* Dynamiczne renderowanie widoków */}
-        <Routes>
-          <Route path="/" element={<Pantry />} />
-          <Route path="/baza" element={<ProductDatabase />} />
-          <Route path="/przepisy" element={<Recipes />} />
-          <Route path="/podsumowanie" element={<Summary />} />
-        </Routes>
-      </div>
+      <AppShell />
     </Router>
   );
 }
