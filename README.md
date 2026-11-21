@@ -5,7 +5,7 @@ Aplikacja pozwala na zarządzanie produktami, które mamy w domu, i na ich podst
 
 | Osoba | Login | Część projektu |
 |---|---|---|
-| Oleksandr Petryk Tkach | @Olek2q | Wirtualna spiżarnia |
+| Oleksandr Petryk Tkach | @Zbigniew Kucharski | Wirtualna spiżarnia |
 | Michał Szczygieł | @m1szczygiel | Baza produktów i integracja z Open Food Facts |
 | Krzysztof Oleksy | @quazowski0 | Wyszukiwanie przepisów i lista zakupów |
 | Maksymilian Zakrzewski | @Jeroklif | Filtry trudności i kalorii, podsumowanie makroskładników |
