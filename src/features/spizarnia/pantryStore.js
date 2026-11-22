@@ -66,6 +66,7 @@ export function makeItem(input) {
   if (input.barcode) item.barcode = String(input.barcode);
   if (input.source) item.source = input.source;
   if (input.nutrition) item.nutrition = input.nutrition;
+  if (typeof input.image === 'string' && /^https:\/\//.test(input.image)) item.image = input.image;
   return item;
 }
 

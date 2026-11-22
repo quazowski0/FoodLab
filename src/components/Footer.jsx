@@ -8,7 +8,7 @@ const columns = [
     title: 'Aplikacja',
     links: [
       { label: 'Spiżarnia', to: '/spizarnia' },
-      { label: 'Baza produktów', to: '/baza' },
+      { label: 'Baza produktów', to: '/spizarnia?zakladka=baza' },
       { label: 'Przepisy i lista zakupów', to: '/przepisy' },
       { label: 'Filtry i makro', to: '/podsumowanie' },
     ],
@@ -118,7 +118,7 @@ export default function Footer() {
 
           {columns.map((col) => (
             <nav key={col.title} className="site-footer__col" aria-label={col.title}>
-              <h3>{col.title}</h3>
+              <h2>{col.title}</h2>
               <ul>
                 {col.links.map((l) => (
                   <li key={l.label}>
@@ -134,7 +134,7 @@ export default function Footer() {
           ))}
 
           <div className="site-footer__news">
-            <h3>Newsletter</h3>
+            <h2>Newsletter</h2>
             <p>Nowe funkcje i przepisy raz w miesiącu. Zero spamu.</p>
             <Newsletter />
           </div>

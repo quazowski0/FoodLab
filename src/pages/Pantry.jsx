@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { usePantry } from '../features/spizarnia';
 import { SORTS, expiryStatus, normalizeName, sortPantry } from '../features/spizarnia/pantryStore.js';
-import PantryForm from '../features/spizarnia/components/PantryForm.jsx';
 import PantryItem from '../features/spizarnia/components/PantryItem.jsx';
-import BarcodeScanner from '../features/spizarnia/components/BarcodeScanner.jsx';
-import '../features/spizarnia/spizarnia.css';
 
 const SORT_KEY = 'foodlab.spizarnia.sort';
 
@@ -16,14 +13,14 @@ function readSort() {
   }
 }
 
-// Strona /spizarnia (Olek): dodawanie, edycja i usuwanie produktów
-export default function Pantry() {
-  const { items, addItem, updateItem, removeItem, changeQuantity, restoreItem, removeExpired } = usePantry();
+// Część "Moje produkty" na stronie /spizarnia (Olek): lista zapasów z edycją, usuwaniem i datami ważności.
+// Nowe produkty dodaje się w części "Szukaj w bazie" (Michał); onOpenBase przełącza na nią.
+export default function Pantry({ onOpenBase }) {
+  const { items, updateItem, removeItem, changeQuantity, restoreItem, removeExpired } = usePantry();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState(readSort);
   const [editingId, setEditingId] = useState(null);
   const [undo, setUndo] = useState(null); // ostatnio usunięty produkt, do cofnięcia
-  const [scanned, setScanned] = useState({ n: 0, product: null }); // wynik skanu wpisany w formularz
 
   useEffect(() => {
     try {
@@ -62,30 +59,24 @@ export default function Pantry() {
   };
 
   return (
-    <div className="sp">
-      <header className="sp-head">
-        <h1 className="sp-title">Spiżarnia</h1>
-        <p className="sp-lead">Wpisz, co masz w kuchni. Na tej podstawie podpowiemy przepisy i listę zakupów.</p>
-        {items.length > 0 && (
-          <ul className="sp-stats" aria-label="Podsumowanie spiżarni">
-            <li><strong>{items.length}</strong> {items.length === 1 ? 'produkt' : 'produktów'}</li>
-            {counts.soon > 0 && <li className="sp-stats--soon"><strong>{counts.soon}</strong> kończy się w ciągu 3 dni</li>}
-            {counts.expired > 0 && <li className="sp-stats--expired"><strong>{counts.expired}</strong> po terminie</li>}
-          </ul>
-        )}
-      </header>
-
-      <section className="sp-panel" aria-labelledby="sp-add-title">
-        <h2 className="sp-h2" id="sp-add-title">Dodaj produkt</h2>
-        <BarcodeScanner onFound={(product) => setScanned((s) => ({ n: s.n + 1, product }))} />
-        {/* key: po każdym skanie formularz startuje od nowa z danymi produktu */}
-        <PantryForm key={scanned.n} defaults={scanned.product} onSubmit={addItem} />
-      </section>
+    <>
+      {items.length > 0 && (
+        <ul className="sp-stats" aria-label="Podsumowanie spiżarni">
+          <li><strong>{items.length}</strong> {items.length === 1 ? 'produkt' : 'produktów'}</li>
+          {counts.soon > 0 && <li className="sp-stats--soon"><strong>{counts.soon}</strong> kończy się w ciągu 3 dni</li>}
+          {counts.expired > 0 && <li className="sp-stats--expired"><strong>{counts.expired}</strong> po terminie</li>}
+        </ul>
+      )}
 
       <section className="sp-panel" aria-labelledby="sp-list-title">
         <div className="sp-toolbar">
           <h2 className="sp-h2" id="sp-list-title">Twoje zapasy</h2>
           <div className="sp-toolbar__tools">
+            {onOpenBase && (
+              <button type="button" className="sp-btn sp-btn--primary" onClick={onOpenBase}>
+                Dodaj produkt
+              </button>
+            )}
             <input
               className="sp-input sp-search"
               type="search"
@@ -131,7 +122,9 @@ export default function Pantry() {
           </ul>
         ) : (
           <p className="sp-empty">
-            {items.length === 0 ? 'Spiżarnia jest pusta. Dodaj pierwszy produkt powyżej.' : 'Nic nie pasuje do wyszukiwania.'}
+            {items.length === 0
+              ? 'Spiżarnia jest pusta. Kliknij „Dodaj produkt”, znajdź go w bazie albo zeskanuj kod.'
+              : 'Nic nie pasuje do wyszukiwania.'}
           </p>
         )}
       </section>
@@ -151,6 +144,6 @@ export default function Pantry() {
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -13,9 +13,9 @@
   --text-h: #0c1a13;
   --muted: #56645a;
   --border: #dbe6d6;
-  --accent: #1f9d55;
+  --accent: #188246;
   --accent-2: #a3e635;
-  --accent-hover: #188246;
+  --accent-hover: #136b39;
   --accent-soft: #dcf2e3;
   --on-accent: #ffffff;
   --blob-1: #a3e635;
@@ -869,7 +869,7 @@ a {
   color: var(--muted);
   max-width: 28ch;
 }
-.site-footer h3 {
+.site-footer h2 {
   margin-bottom: 14px;
   font-size: 0.8rem;
   font-weight: 700;

@@ -50,7 +50,7 @@ const modules = [
     owner: 'Olek',
   },
   {
-    to: '/baza',
+    to: '/spizarnia?zakladka=baza',
     icon: icons.search,
     title: 'Baza produktów',
     text: 'Wyszukuj produkty w Open Food Facts i sprawdzaj ich wartości odżywcze.',

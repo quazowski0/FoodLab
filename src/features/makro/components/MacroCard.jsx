@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import DifficultyBadge from './DifficultyBadge.jsx';
+import RecipeImage from './RecipeImage.jsx';
 import Select from './Select.jsx';
 import { kcalShares, MACROS } from '../nutrition.js';
 
@@ -31,7 +32,7 @@ function Donut({ nutrition, portions }) {
 const portionWord = (n) => (n === 1 ? 'porcja' : n < 5 ? 'porcje' : 'porcji');
 
 // Karta wybranego przepisu: makro, z czego wyszła trudność, wybór pory i „Ugotuj”
-export default function MacroCard({ recipe, plan, defaultSlot, onCook, message }) {
+export default function MacroCard({ recipe, plan, defaultSlot, onCook, message, children }) {
   const [portions, setPortions] = useState(1);
   const [slot, setSlot] = useState(defaultSlot ?? plan[plan.length - 1].key);
 
@@ -45,6 +46,7 @@ export default function MacroCard({ recipe, plan, defaultSlot, onCook, message }
 
   return (
     <aside className="mk-detail" aria-live="polite">
+      <RecipeImage key={recipe.id} recipe={recipe} className="mk-detail__img" fallback={false} />
       <div className="mk-detail__head">
         <DifficultyBadge level={d.level} />
         <h3>{recipe.title}</h3>
@@ -62,7 +64,7 @@ export default function MacroCard({ recipe, plan, defaultSlot, onCook, message }
         </div>
       </div>
       <p className="mk-why" title={`Trudność: ${d.total} pkt (czas ${d.time}, składniki ${d.ingredients}, kroki ${d.steps})`}>
-        {recipe.readyInMinutes} min · {recipe.ingredientsCount} składników · {recipe.stepsCount} kroków
+        {recipe.readyInMinutes} min · {plural(recipe.ingredientsCount, 'składnik', 'składniki', 'składników')} · {plural(recipe.stepsCount, 'krok', 'kroki', 'kroków')}
       </p>
       <div className="mk-field">
         <span className="mk-field__label" id="mk-slot-label">Pora posiłku</span>
@@ -83,6 +85,14 @@ export default function MacroCard({ recipe, plan, defaultSlot, onCook, message }
         <button type="button" className="btn btn--primary mk-cook__btn" onClick={() => onCook(recipe, portions, slot)}>Ugotuj</button>
       </div>
       <p className="mk-toast" role="status">{message}</p>
+      {children}
     </aside>
   );
+}
+
+// 1 krok, 2 kroki, 5 kroków
+function plural(n, one, few, many) {
+  const tens = n % 100;
+  const word = n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && (tens < 12 || tens > 14) ? few : many;
+  return `${n} ${word}`;
 }
