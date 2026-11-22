@@ -1,5 +1,6 @@
 import { expiryLabel, expiryStatus, formatDate, formatQuantity, unitInfo } from '../pantryStore.js';
 import PantryForm from './PantryForm.jsx';
+import { productImage, Thumb } from '../../baza';
 
 const STATUS_TEXT = { expired: 'Po terminie', soon: 'Kończy się', ok: 'Świeże', none: 'Bez daty' };
 
@@ -26,7 +27,10 @@ export default function PantryItem({ item, editing, onEdit, onCancelEdit, onSave
 
   return (
     <li className={`sp-item sp-item--${status} ${item.quantity === 0 ? 'is-empty' : ''}`}>
-      <span className="sp-item__dot" aria-hidden="true" />
+      <span className="sp-item__thumb">
+        <Thumb src={productImage(item)} name={item.name} />
+        <span className="sp-item__dot" aria-hidden="true" />
+      </span>
       <div className="sp-item__main">
         <h3 className="sp-item__name">{item.name}</h3>
         <p className="sp-item__meta">

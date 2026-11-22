@@ -5,7 +5,7 @@ Aplikacja pozwala na zarządzanie produktami, które mamy w domu, i na ich podst
 
 | Osoba | Login | Część projektu |
 |---|---|---|
-| Oleksandr Petryk Tkach | @Zbigniew Kucharski | Wirtualna spiżarnia |
+| Oleksandr Tkach | @Olek2q | Wirtualna spiżarnia |
 | Michał Szczygieł | @m1szczygiel | Baza produktów i integracja z Open Food Facts |
 | Krzysztof Oleksy | @quazowski0 | Wyszukiwanie przepisów i lista zakupów |
 | Maksymilian Zakrzewski | @Jeroklif | Filtry trudności i kalorii, podsumowanie makroskładników |
@@ -33,6 +33,7 @@ Ten moduł umożliwia użytkownikom precyzyjne filtrowanie proponowanych przepis
 - **Zapis danych:** localStorage (bez własnego backendu)
 - **API:**
   - [Open Food Facts](https://world.openfoodfacts.org/data) – produkty i wartości odżywcze, bez klucza
+  - [USDA FoodData Central](https://fdc.nal.usda.gov/api-guide) – produkty nieprzetworzone (owoce, warzywa, mięso) z wartościami na 100 g, darmowy klucz `VITE_USDA_KEY`, opcjonalne
   - [Spoonacular](https://spoonacular.com/food-api) – przepisy, wyszukiwanie po składnikach, kalorie, makro i czas przygotowania (darmowy plan)
 - **Biblioteki:** html5-qrcode (skanowanie kodów kreskowych)
 - **Jakość kodu:** ESLint, Prettier
@@ -42,6 +43,17 @@ Funkcjonalności
 | Funkcja | Właściciel | Opis |
 |---|---|---|
 | Wirtualna spiżarnia | @Olek2q | [#2](../../issues/2) – dodawanie, edycja i usuwanie produktów z ilością i datą ważności, zapis w localStorage |
-| Baza produktów | @m1szczygiel | [#3](../../issues/3) – wyszukiwanie produktów w Open Food Facts i ręczne dodawanie z wartościami odżywczymi |
-| Przepisy i lista zakupów | @quazowski0 | [#4](../../issues/4) – propozycje dań sortowane według liczby brakujących składników, generowanie listy zakupów |
-| Filtry i makroskładniki | @Jeroklif | [#5](../../issues/5) – filtry trudności i kaloryczności, widok makroskładników przepisu |
+| Baza produktów | @m1szczygiel | [#3](../../issues/3) – wyszukiwanie produktów w Open Food Facts, skaner kodu kreskowego i ręczne dodawanie z wartościami odżywczymi |
+| Przepisy i lista zakupów | @quazowski0 | [#4](../../issues/4) – propozycje dań sortowane według liczby brakujących składników, generowanie listy zakupów, przeliczanie porcji, tryb gotowania krok po kroku z minutnikiem, ulubione przepisy |
+| Filtry i makroskładniki | @Jeroklif | [#5](../../issues/5) – filtry trudności i kaloryczności, widok makroskładników przepisu, prawdziwe przepisy ze Spoonacular, filtr „Z tego, co mam”, po „Ugotuj” odejmowanie zużytych składników ze spiżarni |
+
+Spiżarnia i baza produktów są w jednej zakładce **Spiżarnia**, w dwóch częściach: „Moje produkty” (@Olek2q, `src/pages/Pantry.jsx`, `src/features/spizarnia`) i „Szukaj w bazie” (@m1szczygiel, `src/pages/Products.jsx`, `src/features/baza`). Produkt znaleziony w bazie albo zeskanowany trafia do formularza spiżarni, gdzie ustawia się ilość i datę ważności.
+
+## Uruchomienie
+```
+npm install
+npm run dev
+```
+Moduł Przepisy działa bez konfiguracji w trybie demo (12 przykładowych przepisów). Żeby pobierać prawdziwe przepisy ze Spoonacular, skopiuj `.env.example` jako `.env.local` i wpisz swój klucz w `VITE_SPOONACULAR_KEY`. Plik `.env.local` jest ignorowany przez git. Aplikacja zapisuje odpowiedzi w localStorage i pilnuje dziennego limitu zapytań darmowego planu.
+
+Uwaga: aplikacja nie ma backendu, więc klucz Spoonacular trafia do kodu w przeglądarce i da się go podejrzeć w narzędziach deweloperskich. Do projektu na zajęcia wystarczy darmowy klucz, ale nie wrzucajcie go do repozytorium ani nie używajcie płatnego. Tytuły i składniki przepisów są tłumaczone na polski przez nieoficjalny endpoint Google Translate; gdy przestanie działać, aplikacja pokaże tekst po angielsku.

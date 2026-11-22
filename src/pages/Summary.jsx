@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react';
 import '../features/makro/makro.css';
 import { SAMPLE_RECIPES } from '../features/makro/sampleRecipes.js';
+import { analyzeRecipe, getCachedRecipes, getLatestSuggestions, pantryUsage, scaleRecipe } from '../features/przepisy';
+import { getFavorites } from '../features/przepisy/favorites.js';
+import { formatQuantity } from '../features/spizarnia/pantryStore.js';
+import { usePantry } from '../features/spizarnia';
+import { usedCount } from '../features/przepisy/ingredients.js';
+import { Link } from 'react-router-dom';
 import { getDifficulty } from '../features/makro/difficulty.js';
 import { DEFAULT_FILTERS, KCAL_NO_LIMIT, filterRecipes } from '../features/makro/filters.js';
 import { DEFAULT_PROFILE, calcGoals } from '../features/makro/goals.js';
@@ -34,6 +40,10 @@ const TABS = [
   { id: 'cele', label: 'Cele' },
 ];
 
+// 0,05 l czyta się gorzej niż 50 ml
+const usageLabel = (amount, unit) =>
+  (unit === 'l' || unit === 'kg') && amount < 1 ? `${Math.round(amount * 1000)} ${unit === 'l' ? 'ml' : 'g'}` : formatQuantity(amount, unit);
+
 const nowHHMM = () => new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
 export default function Summary() {
@@ -48,7 +58,41 @@ export default function Summary() {
   const [editing, setEditing] = useState(false);
   const [category, setCategory] = useState(null); // null = kategoria pasująca do następnego posiłku
 
-  const recipes = useMemo(() => SAMPLE_RECIPES.map((r) => ({ ...r, difficulty: getDifficulty(r) })), []);
+  const { available, changeQuantity } = usePantry();
+  const [usage, setUsage] = useState(null); // co odjąć ze spiżarni po „Ugotuj”
+  const [fromPantry, setFromPantry] = useLocalStorage('foodlab.zmoich', false);
+
+  // prawdziwe przepisy ze Spoonacular: propozycje z zakładki Przepisy + otwarte szczegóły.
+  // Przykładowe pokazujemy tylko wtedy, gdy nic jeszcze nie pobrano.
+  const real = useMemo(() => {
+    const seen = new Set();
+    return [...getLatestSuggestions(), ...getFavorites(), ...getCachedRecipes()]
+      .filter((r) => r?.nutrition && r.title && (seen.has(r.id) ? false : seen.add(r.id)))
+      .map((r) => {
+        const cats = r.categories?.length ? r.categories : ['obiad'];
+        return {
+          ...r,
+          readyInMinutes: r.readyInMinutes || 30,
+          ingredientsCount: r.ingredientsCount || r.ingredients?.length || 0,
+          stepsCount: r.stepsCount || r.steps?.length || 0,
+          categories: r.dessert && !cats.includes('desery') ? ['desery'] : cats,
+        };
+      });
+  }, []);
+  const usingSamples = real.length === 0;
+
+  // ile składników z każdego przepisu masz w spiżarni (przykładowe nie mają listy składników)
+  const recipes = useMemo(() => {
+    const base = usingSamples ? SAMPLE_RECIPES : real;
+    return base.map((r) => {
+      const analysis = r.ingredients?.length ? analyzeRecipe(r, available) : null;
+      return { ...r, difficulty: getDifficulty(r), pantry: analysis && { used: usedCount(analysis), total: analysis.total, missing: analysis.missingCount } };
+    });
+  }, [real, usingSamples, available]);
+  const MAX_MISSING = 2; // „Z tego, co mam”: dokupujesz najwyżej 2 składniki (przyprawy się nie liczą)
+  const fitsPantry = (r) => r.pantry?.used > 0 && r.pantry.missing <= MAX_MISSING;
+  const pantryMatches = recipes.filter(fitsPantry).length;
+  const onlyPantry = fromPantry && !usingSamples;
 
   const goals = calcGoals(profile);
   const plan = buildPlan(goals.kcal, profile.meals);
@@ -63,9 +107,14 @@ export default function Summary() {
     : slotForCategory(activeCategory, SLOT_TO_CATEGORY, meals, plan, next.slot?.key);
   const budget = targetSlotKey ? slotBudget(targetSlotKey, meals, plan, goals.kcal - totals.kcal) : next;
   const kcalLimit = filters.fitDay ? budget.kcal : filters.maxKcal >= KCAL_NO_LIMIT ? Infinity : filters.maxKcal;
-  const filtered = filterRecipes(recipes, filters, kcalLimit);
+  const byPantry = (a, b) => a.pantry.missing - b.pantry.missing || b.pantry.used - a.pantry.used;
+  const filtered = onlyPantry
+    ? filterRecipes(recipes.filter(fitsPantry), filters, kcalLimit).sort(byPantry)
+    : filterRecipes(recipes, filters, kcalLimit);
   const inCategory = (id) => filtered.filter((r) => r.categories.includes(id));
-  const visible = activeCategory === 'wszystkie' ? filtered : inCategory(activeCategory);
+  // kategoria dobrana automatycznie do pory dnia, ale pusta: pokazujemy wszystko zamiast pustej listy
+  const shownCategory = category === null && activeCategory !== 'wszystkie' && !inCategory(activeCategory).length ? 'wszystkie' : activeCategory;
+  const visible = shownCategory === 'wszystkie' ? filtered : inCategory(shownCategory);
   // w widoku „Wszystkie” każdy przepis tylko raz, w swojej pierwszej kategorii
   const groups = CATEGORIES.map((c) => ({ ...c, items: filtered.filter((r) => r.categories[0] === c.id) })).filter((g) => g.items.length);
   const selected = visible.find((r) => r.id === selectedId) ?? visible[0] ?? null;
@@ -87,10 +136,19 @@ export default function Summary() {
     };
     addMeal(meal);
     setMessage(`${SLOTS[slot].name}: dodano ${meal.kcal} kcal do bilansu dnia`);
+    // składniki z przepisu (ilości na całe danie) przeliczamy na zjedzone porcje
+    const rows = recipe.ingredients?.length ? pantryUsage(scaleRecipe(recipe, portions / (recipe.servings || 1)), available) : [];
+    setUsage(rows.length ? { recipeId: recipe.id, rows, done: false } : null);
+  };
+
+  const applyUsage = () => {
+    usage.rows.forEach((r) => changeQuantity(r.item.id, -r.amount));
+    setUsage({ ...usage, done: true });
   };
 
   const selectRecipe = (id) => {
     setSelectedId(id);
+    setUsage(null);
     setMessage('');
   };
 
@@ -142,11 +200,22 @@ export default function Summary() {
 
       {tab === 'przepisy' && (
         <section className="mk-panel" role="tabpanel" id="mk-pane-przepisy" aria-labelledby="mk-tab-przepisy">
+          {!usingSamples && (
+            <div className="mk-source" role="group" aria-label="Źródło przepisów">
+              <button type="button" className="mk-source__btn" aria-pressed={!onlyPantry} onClick={() => setFromPantry(false)}>
+                Wszystkie przepisy <span>{recipes.length}</span>
+              </button>
+              <button type="button" className="mk-source__btn" aria-pressed={onlyPantry} onClick={() => setFromPantry(true)}
+                title="Przepisy z produktów ze spiżarni, w których brakuje najwyżej 2 składników">
+                Z tego, co mam <span>{pantryMatches}</span>
+              </button>
+            </div>
+          )}
           <div className="mk-cats" role="group" aria-label="Kategorie przepisów">
             {[{ id: 'wszystkie', label: 'Wszystkie' }, ...CATEGORIES].map((c) => {
               const count = c.id === 'wszystkie' ? filtered.length : inCategory(c.id).length;
               return (
-                <button key={c.id} type="button" className="mk-cat" aria-pressed={activeCategory === c.id} onClick={() => setCategory(c.id)}>
+                <button key={c.id} type="button" className="mk-cat" aria-pressed={shownCategory === c.id} onClick={() => setCategory(c.id)}>
                   {c.label}
                   <span className="mk-cat__count">{count}</span>
                   {c.id === nowCategory && <span className="mk-cat__now">teraz</span>}
@@ -161,12 +230,14 @@ export default function Summary() {
             <div className="mk-groups">
               {visible.length === 0 && (
                 <div className="mk-empty">
-                  {filters.fitDay
+                  {onlyPantry
+                    ? 'Ze spiżarni nie da się zrobić nic z tej kategorii (brakuje więcej niż 2 składników). Wyłącz „Z tego, co mam” albo dodaj produkty do spiżarni.'
+                    : filters.fitDay
                     ? `W tej kategorii nic nie mieści się w ${fmt(budget.kcal)} kcal. Wyłącz filtr dnia albo wybierz inną kategorię.`
                     : 'Brak przepisów w tej kategorii dla wybranych filtrów.'}
                 </div>
               )}
-              {activeCategory === 'wszystkie'
+              {shownCategory === 'wszystkie'
                 ? groups.map((g) => (
                     <div key={g.id} className="mk-group">
                       <h3 className="mk-group__title">{g.label}<span>{g.items.length}</span></h3>
@@ -184,7 +255,15 @@ export default function Summary() {
                       ))}
                     </div>
                   )}
-              <p className="mk-note">Przykładowe przepisy. Po podłączeniu modułu przepisów będą tu dania ze Spoonacular.</p>
+              {usingSamples ? (
+                <p className="mk-note">
+                  Na razie przykładowe przepisy. Wejdź w <Link to="/przepisy">Przepisy</Link> i kliknij „Znajdź przepisy”, a pojawią się tu prawdziwe dania dobrane do Twojej spiżarni.
+                </p>
+              ) : (
+                <p className="mk-note">
+                  Dania ze Spoonacular z ostatniego wyszukiwania w <Link to="/przepisy">Przepisach</Link>. Kalorie i makro na 1 porcję.
+                </p>
+              )}
             </div>
             <MacroCard
               key={`${selected?.id}-${targetSlotKey ?? 'all'}-${profile.meals}`}
@@ -193,7 +272,28 @@ export default function Summary() {
               defaultSlot={targetSlotKey}
               onCook={cook}
               message={message}
-            />
+            >
+              {usage && usage.recipeId === selected?.id && (
+                <div className="mk-usage">
+                  {usage.done ? (
+                    <p className="mk-usage__done">Odjęte ze spiżarni. <Link to="/spizarnia">Zobacz spiżarnię</Link></p>
+                  ) : (
+                    <>
+                      <p className="mk-usage__title">Zużyjesz ze spiżarni (szacunkowo):</p>
+                      <ul>
+                        {usage.rows.map((r) => (
+                          <li key={r.item.id}><span>{r.item.name}</span><b>−{usageLabel(r.amount, r.item.unit)}</b></li>
+                        ))}
+                      </ul>
+                      <div className="mk-usage__actions">
+                        <button type="button" className="btn btn--primary" onClick={applyUsage}>Odejmij ze spiżarni</button>
+                        <button type="button" className="btn btn--ghost" onClick={() => setUsage(null)}>Nie teraz</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </MacroCard>
           </div>
         </section>
       )}

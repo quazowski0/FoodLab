@@ -1,25 +1,12 @@
-import { BrowserRouter as Router, Routes, Route, Link, NavLink, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, NavLink, Navigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home.jsx';
 import Summary from './pages/Summary.jsx';
-import Pantry from './pages/Pantry.jsx';
+import PantryHub from './pages/PantryHub.jsx';
+import Recipes from './pages/Recipes.jsx';
 import { PantryProvider } from './features/spizarnia';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import InteractiveBackground from './components/InteractiveBackground.jsx';
 import Footer from './components/Footer.jsx';
-
-// Widoki modułów (na razie zaślepki, każdy właściciel podmienia swój komponent)
-const ProductDatabase = () => (
-  <section className="page">
-    <h2>Baza Produktów (Michał)</h2>
-    <p>Tu wjedzie wyszukiwarka z Open Food Facts.</p>
-  </section>
-);
-const Recipes = () => (
-  <section className="page">
-    <h2>Przepisy i Lista (Krzysiek)</h2>
-    <p>Tu będą kafelki z Spoonacular i lista zakupów.</p>
-  </section>
-);
 
 const NotFound = () => (
   <section className="page page--center">
@@ -31,7 +18,6 @@ const NotFound = () => (
 
 const navItems = [
   { to: '/spizarnia', label: 'Spiżarnia' },
-  { to: '/baza', label: 'Baza produktów' },
   { to: '/przepisy', label: 'Przepisy' },
   { to: '/podsumowanie', label: 'Filtry i makro' },
 ];
@@ -66,8 +52,9 @@ function AppShell() {
       <main className="container main route-fade" key={location.pathname}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/spizarnia" element={<Pantry />} />
-          <Route path="/baza" element={<ProductDatabase />} />
+          <Route path="/spizarnia" element={<PantryHub />} />
+          {/* stary adres bazy produktów: baza jest teraz częścią spiżarni */}
+          <Route path="/baza" element={<Navigate to="/spizarnia?zakladka=baza" replace />} />
           <Route path="/przepisy" element={<Recipes />} />
           <Route path="/podsumowanie" element={<Summary />} />
           <Route path="*" element={<NotFound />} />
