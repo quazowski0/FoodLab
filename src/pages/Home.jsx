@@ -1,297 +1,175 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import HeroBowl from '../components/HeroBowl.jsx';
+import ReceiptPreview, { PantryPick } from '../components/ReceiptPreview.jsx';
+import { usePantry, expiryStatus, expiryLabel } from '../features/spizarnia';
 
-// Proste ikony liniowe (bez zewnętrznych bibliotek)
-const Icon = ({ children }) => (
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
-    strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    {children}
-  </svg>
-);
-
-const icons = {
-  pantry: (
-    <Icon>
-      <rect x="4" y="3" width="16" height="18" rx="2" />
-      <path d="M4 10h16M4 16h16M9 6.5h6" />
-    </Icon>
-  ),
-  search: (
-    <Icon>
-      <circle cx="11" cy="11" r="6" />
-      <path d="m20 20-4.5-4.5" />
-    </Icon>
-  ),
-  recipe: (
-    <Icon>
-      <path d="M3 11h18a9 9 0 0 1-18 0Z" />
-      <path d="M8 7c0-1.5 1-2 1-3.5M12 7c0-1.5 1-2 1-3.5M16 7c0-1.5 1-2 1-3.5" />
-    </Icon>
-  ),
-  chart: (
-    <Icon>
-      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
-    </Icon>
-  ),
-  arrow: (
-    <Icon>
-      <path d="M5 12h14M13 6l6 6-6 6" />
-    </Icon>
-  ),
-};
+// Strona startowa w stylu paragonu (koncepcja 13)
 
 const modules = [
-  {
-    to: '/spizarnia',
-    icon: icons.pantry,
-    title: 'Wirtualna spiżarnia',
-    text: 'Dodawaj produkty, które masz w domu, razem z ilością i datą ważności.',
-    owner: 'Olek',
-  },
-  {
-    to: '/spizarnia?zakladka=baza',
-    icon: icons.search,
-    title: 'Baza produktów',
-    text: 'Wyszukuj produkty w Open Food Facts i sprawdzaj ich wartości odżywcze.',
-    owner: 'Michał',
-  },
-  {
-    to: '/przepisy',
-    icon: icons.recipe,
-    title: 'Przepisy i lista zakupów',
-    text: 'Zobacz, co ugotujesz z tego, co masz, i czego brakuje do wybranego dania.',
-    owner: 'Krzysiek',
-  },
-  {
-    to: '/podsumowanie',
-    icon: icons.chart,
-    title: 'Filtry i makro',
-    text: 'Zawężaj przepisy po trudności i kaloriach, sprawdzaj makroskładniki.',
-    owner: 'Maks',
-  },
+  { to: '/spizarnia', title: 'Spiżarnia', text: 'Produkty z ilością i datą ważności.', owner: 'Olek' },
+  { to: '/spizarnia?zakladka=baza', title: 'Baza produktów', text: 'Open Food Facts i wartości odżywcze.', owner: 'Michał' },
+  { to: '/przepisy', title: 'Przepisy i zakupy', text: 'Dania z tego, co masz, i lista zakupów.', owner: 'Krzysiek' },
+  { to: '/podsumowanie', title: 'Filtry i makro', text: 'Trudność, kalorie i makroskładniki.', owner: 'Maks' },
 ];
 
 const steps = [
   { title: 'Uzupełnij spiżarnię', text: 'Wpisz produkty ręcznie albo znajdź je w bazie.' },
-  { title: 'Wyszukaj przepisy', text: 'FoodLab dopasuje dania do Twoich składników.' },
-  { title: 'Dobierz i ugotuj', text: 'Ustaw trudność i kalorie, a braki trafią na listę zakupów.' },
+  { title: 'Znajdź przepis', text: 'FoodLab dopasuje dania do tego, co masz.' },
+  { title: 'Gotuj', text: 'Ustaw trudność i kalorie, a braki trafią na listę zakupów.' },
 ];
 
 const stats = [
-  { value: 4, suffix: '', label: 'moduły w jednej aplikacji' },
-  { value: 2, suffix: '', label: 'darmowe bazy danych o jedzeniu' },
-  { value: 100, suffix: '%', label: 'danych zostaje w Twojej przeglądarce' },
-  { value: 0, suffix: ' zł', label: 'kosztuje korzystanie' },
+  { value: '4', label: 'moduły w jednej aplikacji' },
+  { value: '2', label: 'darmowe bazy jedzenia' },
+  { value: '100%', label: 'danych zostaje u Ciebie' },
+  { value: '0 zł', label: 'za korzystanie' },
 ];
 
-const ingredients = [
-  'pomidory', 'jajka', 'makaron', 'ser', 'cebula', 'czosnek', 'kurczak', 'ryż',
-  'papryka', 'szpinak', 'jogurt', 'cytryna', 'ziemniaki', 'marchewka', 'fasola', 'bazylia',
-];
+const tape = ['4 moduły', '0 zł', 'bez logowania', 'dane zostają w przeglądarce', 'Open Food Facts', 'Spoonacular'];
 
-const prefersReducedMotion = () =>
-  typeof window !== 'undefined' &&
-  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const STATUS = {
+  expired: { cls: 'is-bad', text: 'Po terminie' },
+  soon: { cls: 'is-mid', text: 'Zjedz szybko' },
+  ok: { cls: 'is-ok', text: 'OK' },
+  none: { cls: '', text: 'Bez daty' },
+};
 
-// Dodaje klasę .is-visible, gdy element wjedzie w ekran (animacje przy przewijaniu)
-function useReveal() {
-  const ref = useRef(null);
-  useEffect(() => {
-    const root = ref.current;
-    if (!root) return;
-    const items = root.querySelectorAll('.reveal');
-    if (!('IntersectionObserver' in window) || prefersReducedMotion()) {
-      items.forEach((el) => el.classList.add('is-visible'));
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('is-visible');
-            io.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.15, rootMargin: '0px 0px -40px 0px' },
+const fmtDate = (iso) => (iso ? iso.split('-').reverse().join('.') : '-');
+const fmtQty = (p) => `${String(p.quantity).replace('.', ',')} ${p.unit}`;
+
+// Prawdziwa spiżarnia (tylko odczyt): 5 produktów z najbliższą datą ważności
+function Stock() {
+  const { items } = usePantry();
+  const list = [...items]
+    .filter((p) => p.quantity > 0)
+    .sort((a, b) => (a.expiry || '9999').localeCompare(b.expiry || '9999'))
+    .slice(0, 5);
+
+  if (!list.length) {
+    return (
+      <div className="ticket stock stock--empty">
+        <p>Magazyn pusty. Dodaj pierwsze produkty, a tutaj zobaczysz, co trzeba zjeść najpierw.</p>
+        <Link to="/spizarnia" className="btn btn--primary">Otwórz spiżarnię</Link>
+      </div>
     );
-    items.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-  return ref;
-}
-
-// Liczba, która "odlicza" od zera, gdy pojawi się na ekranie
-function CountUp({ to, suffix }) {
-  const ref = useRef(null);
-  // bez animacji (ograniczony ruch / stara przeglądarka) od razu pokazujemy wynik
-  const [animate] = useState(
-    () => !prefersReducedMotion() && typeof window !== 'undefined' && 'IntersectionObserver' in window,
-  );
-  const [value, setValue] = useState(animate ? 0 : to);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !animate) return;
-    let frame;
-    const io = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      io.disconnect();
-      const start = performance.now();
-      const duration = 1200;
-      const tick = (now) => {
-        const t = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - t, 3);
-        setValue(Math.round(to * eased));
-        if (t < 1) frame = requestAnimationFrame(tick);
-      };
-      frame = requestAnimationFrame(tick);
-    });
-    io.observe(el);
-    return () => {
-      io.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  }, [to, animate]);
+  }
 
   return (
-    <span ref={ref}>
-      {value}
-      {suffix}
-    </span>
-  );
-}
-
-// Kafelek, który lekko się przechyla i podświetla w miejscu kursora
-function TiltCard({ to, children, delay }) {
-  const ref = useRef(null);
-
-  const onMove = (e) => {
-    const el = ref.current;
-    if (!el || prefersReducedMotion()) return;
-    const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width;
-    const y = (e.clientY - r.top) / r.height;
-    el.style.setProperty('--mx', `${x * 100}%`);
-    el.style.setProperty('--my', `${y * 100}%`);
-    el.style.setProperty('--rx', `${(0.5 - y) * 8}deg`);
-    el.style.setProperty('--ry', `${(x - 0.5) * 10}deg`);
-  };
-  const onLeave = () => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.setProperty('--rx', '0deg');
-    el.style.setProperty('--ry', '0deg');
-  };
-
-  return (
-    <Link
-      ref={ref}
-      to={to}
-      className="card reveal"
-      style={{ '--delay': `${delay}ms` }}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-    >
-      {children}
-    </Link>
+    <div className="ticket stock">
+      <div className="stock__row stock__row--head">
+        <span>Produkt</span><span>Ilość</span><span>Ważne do</span><span>Status</span>
+      </div>
+      {list.map((p) => {
+        const st = STATUS[expiryStatus(p.expiry)] ?? STATUS.none;
+        return (
+          <div key={p.id} className="stock__row">
+            <span className="stock__name">{p.name}</span>
+            <span>{fmtQty(p)}</span>
+            <span>{fmtDate(p.expiry)}</span>
+            <span className={`stock__st ${st.cls}`} title={expiryLabel(p.expiry)}>{st.text}</span>
+          </div>
+        );
+      })}
+      <Link to="/spizarnia" className="stock__more">Cała spiżarnia ({items.length} poz.) &rarr;</Link>
+    </div>
   );
 }
 
 export default function Home() {
-  const pageRef = useReveal();
+  // pokazowa spiżarnia w hero (startowo wszystko jest w domu oprócz sosu sojowego)
+  const [have, setHave] = useState(
+    () => new Set(['kurczak', 'ryż', 'papryka', 'brokuł', 'cebula', 'czosnek', 'jajka', 'szpinak']),
+  );
+  const toggle = (item) =>
+    setHave((prev) => {
+      const next = new Set(prev);
+      if (next.has(item)) next.delete(item);
+      else next.add(item);
+      return next;
+    });
 
   return (
-    <div className="home" ref={pageRef}>
+    <div className="home">
       <section className="hero">
         <div className="hero__text">
-          <span className="eyebrow hero-in" style={{ '--delay': '0ms' }}>
-            <span className="eyebrow__dot" /> Twoja kuchnia, lepiej zaplanowana
-          </span>
-          <h1 className="hero-in" style={{ '--delay': '80ms' }}>
-            Ugotuj coś dobrego z tego, <span className="gradient-text">co już masz</span>
-          </h1>
-          <p className="lead hero-in" style={{ '--delay': '160ms' }}>
-            FoodLab zapamiętuje produkty z Twojej kuchni, podpowiada pasujące przepisy
-            i pokazuje, ile kalorii i makroskładników ma każde danie.
+          <p className="kicker">Nr 0001 · wirtualna spiżarnia · bez logowania</p>
+          <h1>Rachunek za obiad: <span className="accent">0&nbsp;zł</span>.</h1>
+          <p className="lead">
+            Wpisz, co masz w szafkach. FoodLab dobierze przepis, policzy makro
+            i wydrukuje listę tego, czego brakuje.
           </p>
-          <div className="hero__actions hero-in" style={{ '--delay': '240ms' }}>
-            <Link to="/spizarnia" className="btn btn--primary">
-              Otwórz spiżarnię <span className="btn__icon">{icons.arrow}</span>
-            </Link>
+          <div className="hero__actions">
+            <Link to="/spizarnia" className="btn btn--primary">Otwórz spiżarnię</Link>
             <Link to="/przepisy" className="btn btn--ghost">Szukaj przepisów</Link>
           </div>
+          <PantryPick have={have} onToggle={toggle} />
         </div>
-
-        <div className="hero__art hero-in" style={{ '--delay': '200ms' }}>
-          <div className="hero__glow" />
-          <HeroBowl />
+        <div className="hero__art">
+          <ReceiptPreview have={have} />
         </div>
       </section>
 
-      <div className="marquee" aria-hidden="true">
-        <div className="marquee__track">
-          {[...ingredients, ...ingredients].map((item, i) => (
-            <span key={i} className="marquee__item">{item}</span>
+      <div className="tape" aria-hidden="true">
+        <div className="tape__track">
+          {[...tape, ...tape].map((t, i) => (
+            <span key={i}>*** {t}</span>
           ))}
         </div>
       </div>
 
-      <section className="stats">
-        {stats.map((s, i) => (
-          <div key={s.label} className="stat reveal" style={{ '--delay': `${i * 80}ms` }}>
-            <strong className="stat__value"><CountUp to={s.value} suffix={s.suffix} /></strong>
-            <span className="stat__label">{s.label}</span>
-          </div>
-        ))}
-      </section>
-
       <section className="section">
-        <div className="section__head reveal">
-          <span className="kicker">Moduły</span>
-          <h2>Co znajdziesz w aplikacji</h2>
-        </div>
-        <div className="cards">
-          {modules.map((m, i) => (
-            <TiltCard key={m.to} to={m.to} delay={i * 90}>
-              <span className="card__icon" aria-hidden="true">{m.icon}</span>
-              <h3>{m.title}</h3>
-              <p>{m.text}</p>
-              <span className="card__meta">
-                Moduł: {m.owner} <span className="card__arrow" aria-hidden="true">{icons.arrow}</span>
-              </span>
-            </TiltCard>
+        <h2>Podsumowanie</h2>
+        <p className="section__sub">Krótko, jak na paragonie.</p>
+        <div className="stats">
+          {stats.map((s) => (
+            <div key={s.label} className="stat">
+              <strong>{s.value}</strong>
+              <span>{s.label}</span>
+            </div>
           ))}
         </div>
       </section>
 
       <section className="section">
-        <div className="section__head reveal">
-          <span className="kicker">Krok po kroku</span>
-          <h2>Jak to działa</h2>
+        <h2>Pozycje na rachunku</h2>
+        <p className="section__sub">Cztery moduły, każdy robi ktoś z zespołu.</p>
+        <div className="ticket">
+          {modules.map((m, i) => (
+            <Link key={m.to} to={m.to} className="pos">
+              <span className="pos__n">0{i + 1}</span>
+              <span className="pos__body">
+                <span className="pos__title">{m.title}</span>
+                <span className="pos__text">{m.text}</span>
+              </span>
+              <span className="pos__who">{m.owner}</span>
+            </Link>
+          ))}
         </div>
+      </section>
+
+      <section className="section">
+        <h2>Stan magazynu</h2>
+        <p className="section__sub">Twoja spiżarnia: co masz i co trzeba zjeść najpierw.</p>
+        <Stock />
+      </section>
+
+      <section className="section">
+        <h2>Jak to działa</h2>
+        <p className="section__sub">Trzy kroki do obiadu.</p>
         <ol className="steps">
           {steps.map((s, i) => (
-            <li key={s.title} className="step reveal" style={{ '--delay': `${i * 120}ms` }}>
-              <span className="step__num">{i + 1}</span>
-              <div>
-                <h3>{s.title}</h3>
-                <p>{s.text}</p>
-              </div>
+            <li key={s.title} className="step">
+              <small>Krok {i + 1}/3</small>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="cta reveal">
-        <div>
-          <h2>Zajrzyj do lodówki i zacznij</h2>
-          <p>Dodaj kilka produktów, a FoodLab podpowie, co z nich zrobić.</p>
-        </div>
-        <Link to="/spizarnia" className="btn btn--light">
-          Dodaj pierwsze produkty <span className="btn__icon">{icons.arrow}</span>
-        </Link>
+      <section className="cta">
+        <h2>Zajrzyj do lodówki<br />i wydrukuj obiad.</h2>
+        <Link to="/spizarnia" className="btn btn--light">Dodaj pierwsze produkty</Link>
       </section>
     </div>
   );
