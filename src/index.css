@@ -813,6 +813,55 @@ a {
     width: 44px;
     height: 44px;
   }
+  .brand,
+  .rc-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Wąskie telefony (iPhone SE itp.): font maszynowy jest szeroki, więc ciaśniej */
+@media (max-width: 420px) {
+  .nav {
+    gap: 12px;
+  }
+  .nav__link {
+    font-size: 0.74rem;
+    letter-spacing: 0.03em;
+  }
+  .main .sp-panel {
+    padding: 14px;
+  }
+  /* produkt w spiżarni: nazwa na całą szerokość, ilość i przyciski w drugim wierszu */
+  .main .sp-item {
+    gap: 10px 12px;
+    padding: 12px;
+  }
+  .main .sp-item__main {
+    grid-column: 2 / -1;
+  }
+  .main .sp-qty,
+  .main .sp-item__actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .main .sp-qty {
+    justify-self: start;
+  }
+  .main .sp-item__actions {
+    justify-self: end;
+  }
+  .main .sp-item .sp-icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .main .sp-qty {
+    gap: 4px;
+  }
+  .main .sp-qty__value {
+    min-width: 48px;
+  }
 }
 
 /* Puste stany: ikona nad tekstem zamiast samego napisu */
