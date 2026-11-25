@@ -5,7 +5,6 @@ import PantryHub from './pages/PantryHub.jsx';
 import Recipes from './pages/Recipes.jsx';
 import { PantryProvider } from './features/spizarnia';
 import ThemeToggle from './components/ThemeToggle.jsx';
-import InteractiveBackground from './components/InteractiveBackground.jsx';
 import Footer from './components/Footer.jsx';
 
 const NotFound = () => (
@@ -27,11 +26,9 @@ function AppShell() {
 
   return (
     <div className="app">
-      <InteractiveBackground />
       <header className="topbar">
         <div className="container topbar__inner">
           <Link to="/" className="brand" aria-label="FoodLab, strona główna">
-            <img src="/favicon.svg" alt="" width="28" height="28" />
             <span>FoodLab</span>
           </Link>
 

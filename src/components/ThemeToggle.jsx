@@ -35,6 +35,11 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    // pasek przeglądarki na telefonie w kolorze tła wybranego trybu
+    document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+      meta.removeAttribute('media');
+      meta.setAttribute('content', theme === 'dark' ? '#121311' : '#e9e6df');
+    });
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {
